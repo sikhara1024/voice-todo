@@ -248,6 +248,7 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
     <div class="sync-bar" id="syncBar">
       <div class="sync-dot" id="syncDot"></div>
       <span id="syncLabel">동기화 꺼짐</span>
+      <button class="sync-setup-btn" onclick="manualSync()">↻</button>
       <button class="sync-setup-btn" onclick="openSyncModal()">설정</button>
     </div>
 
@@ -342,9 +343,11 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
         <button class="toggle-pw" onclick="togglePw()">👁</button>
       </div>
     </div>
-    <div id="syncGistInfo" style="display:none;margin-bottom:10px">
-      <div class="modal-field"><label>Gist ID (자동 생성됨)</label>
-        <div class="sync-code-box"><code id="gistIdDisplay"></code><button class="copy-btn" onclick="copyGistId()">복사</button></div>
+    <div class="modal-field">
+      <label>Gist ID <span style="color:var(--t2);font-weight:400">(자동 탐지 — 또는 다른 기기에서 복사해 직접 입력)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="syncGistIdInput" placeholder="자동 탐지됨 (비워두면 자동)" autocomplete="off" style="font-family:monospace;font-size:13px" />
+        <button class="copy-btn" onclick="copyGistId()" style="flex-shrink:0">복사</button>
       </div>
     </div>
     <div class="modal-btns">
@@ -868,6 +871,7 @@ async function syncPush() {
   try {
     await fetch(`https://api.github.com/gists/${syncCfg.gistId}`,{
       method:'PATCH',
+      keepalive: true,
       headers:{'Authorization':'Bearer '+syncCfg.token,'Content-Type':'application/json'},
       body:JSON.stringify({files:{'todos.json':{content:JSON.stringify({todos:state.todos,updatedAt:new Date().toISOString()})}}})
     });
@@ -891,7 +895,7 @@ async function syncPull() {
 }
 function debouncedPush() {
   clearTimeout(pushTimer);
-  pushTimer=setTimeout(syncPush, 3000);
+  pushTimer=setTimeout(syncPush, 500);
 }
 async function setupSync(token) {
   document.getElementById('syncDot').className='sync-dot busy';
@@ -913,9 +917,9 @@ async function setupSync(token) {
 // sync modal
 function openSyncModal() {
   document.getElementById('syncTokenInput').value=syncCfg.token||'';
-  const gi=document.getElementById('syncGistInfo'), dw=document.getElementById('syncDisconnectWrap');
-  if(syncCfg.gistId){ gi.style.display='block'; document.getElementById('gistIdDisplay').textContent=syncCfg.gistId; dw.style.display='block'; }
-  else { gi.style.display='none'; dw.style.display='none'; }
+  document.getElementById('syncGistIdInput').value=syncCfg.gistId||'';
+  const dw=document.getElementById('syncDisconnectWrap');
+  dw.style.display=syncCfg.gistId?'block':'none';
   document.getElementById('syncOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('syncTokenInput').focus(),150);
 }
@@ -923,7 +927,9 @@ function closeSyncModal() { document.getElementById('syncOverlay').classList.rem
 function syncOverlayClick(e){ if(e.target===document.getElementById('syncOverlay')) closeSyncModal(); }
 async function saveSyncSetup() {
   const token=document.getElementById('syncTokenInput').value.trim();
+  const manualGistId=document.getElementById('syncGistIdInput').value.trim();
   if(!token){ showToast('토큰을 입력하세요'); return; }
+  if(manualGistId){ syncCfg.token=token; syncCfg.gistId=manualGistId; saveSyncCfg(); updateSyncUI(); closeSyncModal(); showToast('동기화 연결됨 ☁️'); syncPull(); return; }
   const ok=await setupSync(token);
   if(ok){ closeSyncModal(); showToast('동기화 연결됨 ☁️'); syncPull(); }
 }
@@ -936,7 +942,13 @@ function togglePw() {
   inp.type=inp.type==='password'?'text':'password';
 }
 function copyGistId() {
-  navigator.clipboard.writeText(syncCfg.gistId).then(()=>showToast('복사됨'));
+  const id=syncCfg.gistId||document.getElementById('syncGistIdInput').value.trim();
+  if(!id){ showToast('Gist ID가 없습니다'); return; }
+  navigator.clipboard.writeText(id).then(()=>showToast('Gist ID 복사됨'));
+}
+function manualSync() {
+  if(!syncCfg.token||!syncCfg.gistId){ openSyncModal(); return; }
+  syncPull().then(()=>showToast('동기화 완료 ☁️'));
 }
 document.getElementById('syncBtn').addEventListener('click', openSyncModal);
 
@@ -972,7 +984,9 @@ function init() {
   renderTodoList(); renderCal(); rescheduleAll(); checkNotifBanner(); updateSyncUI();
   if(syncCfg.token&&syncCfg.gistId) syncPull();
   setInterval(()=>{ rescheduleAll(); checkNotifBanner(); updateSyncUI(); }, 60000);
-  setInterval(()=>{ if(syncCfg.token&&syncCfg.gistId) syncPull(); }, 5*60*1000);
+  setInterval(()=>{ if(syncCfg.token&&syncCfg.gistId) syncPull(); }, 30*1000);
+  window.addEventListener('beforeunload', ()=>{ if(syncCfg.token&&syncCfg.gistId) syncPush(); });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden&&syncCfg.token&&syncCfg.gistId) syncPull(); });
 }
 window.addEventListener('load', init);
 </script>
