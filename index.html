@@ -125,7 +125,9 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
 .allday-col{flex:1;border-left:1px solid var(--bdr);padding:2px 3px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .allday-ev{font-size:11px;padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;cursor:pointer;line-height:1.5}
 .allday-ev.completed{opacity:.4;text-decoration:line-through}
-.tg-scroll{flex:1;overflow:auto;display:flex;-webkit-overflow-scrolling:touch}
+.tg-scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.tg-head{position:sticky;top:0;z-index:5;background:var(--bg1)}
+.tg-body{display:flex}
 .time-col{width:52px;min-width:52px;flex-shrink:0}
 .time-label{height:60px;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:8px;font-size:10px;color:var(--t2);position:relative;top:-6px}
 .day-cols{flex:1;display:flex;min-width:0}
@@ -685,27 +687,27 @@ function renderMonthHTML(){
 function renderWeekHTML(){
   const ws=weekStart(state.currentDate),today=new Date();
   const days=Array.from({length:7},(_,i)=>{ const d=new Date(ws);d.setDate(ws.getDate()+i);return d; });
-  let h=`<div class="tg-wrap"><div class="week-hdr"><div class="week-hdr-tc"></div><div class="week-hdr-days">`;
+  let h=`<div class="tg-wrap"><div class="tg-scroll"><div class="tg-head"><div class="week-hdr"><div class="week-hdr-tc"></div><div class="week-hdr-days">`;
   days.forEach(d=>{ h+=`<div class="week-hdr-day${sameDay(d,today)?' today':''}" data-date="${d.toDateString()}"><div class="dow">${DOW_KO[d.getDay()]}</div><div class="dnum">${d.getDate()}</div></div>`; });
   h+=`</div></div><div class="allday-row"><div class="allday-tc">종일</div><div class="allday-cols">`;
   days.forEach(d=>{ h+=`<div class="allday-col">`; getAllDayForDay(d).forEach(t=>{ h+=`<div class="allday-ev${t.completed?' completed':''}" style="background:${t.color}" data-id="${t.id}">${escH(t.title)}</div>`; }); h+=`</div>`; });
-  h+=`</div></div><div class="tg-scroll"><div class="time-col">`;
+  h+=`</div></div></div><div class="tg-body"><div class="time-col">`;
   for(let i=0;i<24;i++)h+=`<div class="time-label">${i===0?'':i+':00'}</div>`;
   h+=`</div><div class="day-cols">`;
   days.forEach(d=>{ h+=`<div class="day-col" data-date="${d.toDateString()}"><div class="hour-slots">`; for(let i=0;i<24;i++)h+=`<div class="hour-slot" data-h="${i}" data-date="${d.toDateString()}"><div class="half-line"></div></div>`; h+=`</div>`; getTimedForDay(d).forEach(t=>{ h+=evBlock(t); }); if(sameDay(d,today))h+=nowLine(); h+=`</div>`; });
-  return h+`</div></div></div>`;
+  return h+`</div></div></div></div>`;
 }
 
 function renderDayHTML(d){
   const today=new Date(),alld=getAllDayForDay(d);
-  let h=`<div class="tg-wrap">`;
-  if(alld.length){ h+=`<div class="allday-row"><div class="allday-tc">종일</div><div class="allday-cols"><div class="allday-col">`; alld.forEach(t=>{ h+=`<div class="allday-ev${t.completed?' completed':''}" style="background:${t.color}" data-id="${t.id}">${escH(t.title)}</div>`; }); h+=`</div></div></div>`; }
-  h+=`<div class="tg-scroll"><div class="time-col">`;
+  let h=`<div class="tg-wrap"><div class="tg-scroll">`;
+  if(alld.length){ h+=`<div class="tg-head"><div class="allday-row"><div class="allday-tc">종일</div><div class="allday-cols"><div class="allday-col">`; alld.forEach(t=>{ h+=`<div class="allday-ev${t.completed?' completed':''}" style="background:${t.color}" data-id="${t.id}">${escH(t.title)}</div>`; }); h+=`</div></div></div></div>`; }
+  h+=`<div class="tg-body"><div class="time-col">`;
   for(let i=0;i<24;i++)h+=`<div class="time-label">${i===0?'':i+':00'}</div>`;
   h+=`</div><div class="day-cols"><div class="day-col" data-date="${d.toDateString()}"><div class="hour-slots">`;
   for(let i=0;i<24;i++)h+=`<div class="hour-slot" data-h="${i}" data-date="${d.toDateString()}"><div class="half-line"></div></div>`;
   h+=`</div>`; getTimedForDay(d).forEach(t=>{ h+=evBlock(t); }); if(sameDay(d,today))h+=nowLine();
-  return h+`</div></div></div></div>`;
+  return h+`</div></div></div></div></div>`;
 }
 
 function evBlock(t){ const d=new Date(t.date),top=d.getHours()*60+d.getMinutes(); return `<div class="cal-event${t.completed?' completed':''}" style="top:${top}px;height:52px;background:${t.color}" data-id="${t.id}"><div class="cal-event-title">${escH(t.title)}</div><div class="cal-event-time">${fmtTime(d)}</div></div>`; }
