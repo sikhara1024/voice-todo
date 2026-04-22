@@ -506,31 +506,46 @@ document.getElementById('syncBtn').addEventListener('click', openSyncModal);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && currentUser) subscribeFb(); });
 
 // ═══════════════════ KOREAN PARSER ═══════════════
+// 한글 숫자 → 정수 (음성인식이 한글로 출력하는 경우 대응)
+const KH = {열두:12,열한:11,열:10,아홉:9,여덟:8,일곱:7,여섯:6,다섯:5,
+            넷:4,네:4,셋:3,세:3,둘:2,두:2,하나:1,한:1,
+            십이:12,십일:11,십:10,구:9,팔:8,칠:7,육:6,오:5,사:4,삼:3,이:2,일:1};
+const pN = s => KH[s] !== undefined ? KH[s] : parseInt(s);
+// 숫자 단위 — 한글 긴 것부터 먼저 (순서 중요)
+const TU = '(열두|열한|열|아홉|여덟|일곱|여섯|다섯|넷|네|셋|세|둘|두|하나|한|십이|십일|십|구|팔|칠|육|사|삼|이|일|\\d{1,2})';
+
 function parseInput(text) {
   let t = text.trim();
   const now = new Date();
   const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   let date = null, hasTime = false, hours = -1, minutes = 0, m;
 
-  m = t.match(/([오전오후]+)\s*(\d{1,2})\s*시\s*(?:(\d{1,2})\s*분)?/);
+  // ── 시간 파싱 ──
+  // 패턴1: 오전/오후 + 시간 + (분|반)?
+  m = t.match(new RegExp('([오전오후]+)\\s*' + TU + '\\s*시\\s*(?:' + TU + '\\s*분|(반))?'));
   if (m) {
-    hours = parseInt(m[2]); minutes = m[3] ? parseInt(m[3]) : 0;
+    hours = pN(m[2]);
+    minutes = m[4] === '반' ? 30 : (m[3] ? pN(m[3]) : 0);
     if (m[1].includes('오후') && hours < 12) hours += 12;
     if (m[1].includes('오전') && hours === 12) hours = 0;
     t = t.replace(m[0], '');
   } else {
-    m = t.match(/(\d{1,2})\s*시\s*(\d{1,2})\s*분/);
-    if (m) { hours=parseInt(m[1]); minutes=parseInt(m[2]); t=t.replace(m[0],''); }
+    // 패턴2: 시간 + 분 (오전/오후 없음)
+    m = t.match(new RegExp(TU + '\\s*시\\s*' + TU + '\\s*분'));
+    if (m) { hours = pN(m[1]); minutes = pN(m[2]); t = t.replace(m[0], ''); }
     else {
-      m = t.match(/(\d{1,2})\s*시반/);
-      if (m) { hours=parseInt(m[1]); minutes=30; t=t.replace(m[0],''); }
+      // 패턴3: 시반
+      m = t.match(new RegExp(TU + '\\s*시반'));
+      if (m) { hours = pN(m[1]); minutes = 30; t = t.replace(m[0], ''); }
       else {
-        m = t.match(/(\d{1,2})\s*시(?!\w)/);
-        if (m) { hours=parseInt(m[1]); minutes=0; t=t.replace(m[0],''); }
+        // 패턴4: X시 (단독 — 숫자만, 한글 단독 숫자는 오파싱 방지를 위해 오전/오후 있는 경우만)
+        m = t.match(/(\d{1,2})\s*시(?!간|작|내|외|장|청)/);
+        if (m) { hours = parseInt(m[1]); minutes = 0; t = t.replace(m[0], ''); }
       }
     }
   }
 
+  // ── 날짜 파싱 ──
   const dayMap = {월:1,화:2,수:3,목:4,금:5,토:6,일:0};
   if      (/오늘/.test(t)) { date=new Date(todayMid); t=t.replace(/오늘(까지|에)?/g,''); }
   else if (/내일/.test(t)) { date=new Date(todayMid); date.setDate(date.getDate()+1); t=t.replace(/내일(까지|에)?/g,''); }
@@ -553,33 +568,35 @@ function parseInput(text) {
     }
   }
 
+  // ── 시간 적용 ──
   if (hours >= 0) {
     hasTime = true;
     if (!date) {
-      date=new Date(todayMid);
-      const chk=new Date(todayMid); chk.setHours(hours,minutes,0,0);
-      if(chk<=now) date.setDate(date.getDate()+1);
+      date = new Date(todayMid);
+      const chk = new Date(todayMid); chk.setHours(hours, minutes, 0, 0);
+      if (chk <= now) date.setDate(date.getDate() + 1);
     }
-    date.setHours(hours,minutes,0,0);
+    date.setHours(hours, minutes, 0, 0);
   }
 
   t = t.replace(/[이가은는을를에서으로까지도]/g,' ').replace(/\s{2,}/g,' ').trim();
-  return { title: t||text.trim(), date, hasTime };
+  return { title: t || text.trim(), date, hasTime };
 }
 
 // ═══════════════════ VOICE ════════════════════════
-let recognition=null, isRecording=false;
+let recognition=null, isRecording=false, stopTimer=null, fullTranscript='';
+function resetStopTimer(){ clearTimeout(stopTimer); stopTimer=setTimeout(()=>{ if(recognition)recognition.stop(); },5000); }
 function initVoice() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ document.getElementById('voiceStatus').textContent='음성 인식 미지원'; document.getElementById('micBtn').style.opacity='.4'; document.getElementById('micBtn').style.pointerEvents='none'; return; }
-  recognition=new SR(); recognition.lang='ko-KR'; recognition.continuous=false; recognition.interimResults=true;
-  recognition.onstart=()=>{ isRecording=true; document.getElementById('micBtn').classList.add('recording'); document.getElementById('micBtn').textContent='⏹'; document.getElementById('voiceStatus').textContent='듣는 중...'; };
-  recognition.onresult=(e)=>{ let f='',i=''; for(let x=e.resultIndex;x<e.results.length;x++){ if(e.results[x].isFinal)f+=e.results[x][0].transcript; else i+=e.results[x][0].transcript; } const p=document.getElementById('transcriptPreview'); p.textContent=f||i; p.classList.add('visible'); if(f)processVoice(f.trim()); };
-  recognition.onerror=(e)=>{ stopRec(); if(e.error==='no-speech')showToast('음성이 감지되지 않았습니다'); else if(e.error==='not-allowed')showToast('마이크 권한이 필요합니다'); else showToast('오류: '+e.error); };
-  recognition.onend=()=>stopRec();
+  recognition=new SR(); recognition.lang='ko-KR'; recognition.continuous=true; recognition.interimResults=true;
+  recognition.onstart=()=>{ isRecording=true; fullTranscript=''; resetStopTimer(); document.getElementById('micBtn').classList.add('recording'); document.getElementById('micBtn').textContent='⏹'; document.getElementById('voiceStatus').textContent='듣는 중...'; };
+  recognition.onresult=(e)=>{ resetStopTimer(); let interim=''; for(let x=e.resultIndex;x<e.results.length;x++){ if(e.results[x].isFinal)fullTranscript+=e.results[x][0].transcript; else interim+=e.results[x][0].transcript; } const p=document.getElementById('transcriptPreview'); p.textContent=fullTranscript+interim; p.classList.add('visible'); };
+  recognition.onerror=(e)=>{ clearTimeout(stopTimer); stopRec(); if(e.error==='no-speech'){}else if(e.error==='not-allowed')showToast('마이크 권한이 필요합니다'); else showToast('오류: '+e.error); };
+  recognition.onend=()=>{ clearTimeout(stopTimer); stopRec(); if(fullTranscript.trim())processVoice(fullTranscript.trim()); };
 }
 function stopRec(){ isRecording=false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('micBtn').textContent='🎤'; document.getElementById('voiceStatus').textContent='클릭하여 음성 입력'; }
-document.getElementById('micBtn').addEventListener('click',()=>{ if(!recognition)return; if(isRecording)recognition.stop(); else{ document.getElementById('transcriptPreview').classList.remove('visible'); recognition.start(); } });
+document.getElementById('micBtn').addEventListener('click',()=>{ if(!recognition)return; if(isRecording){ clearTimeout(stopTimer); recognition.stop(); } else{ document.getElementById('transcriptPreview').classList.remove('visible'); fullTranscript=''; recognition.start(); } });
 function processVoice(text){ const p=document.getElementById('transcriptPreview'); p.textContent=text; const d=parseInput(text); addTodo(d.title,d.date,d.hasTime); setTimeout(()=>{ p.classList.remove('visible'); p.textContent=''; },2500); }
 
 // ═══════════════════ TODO CRUD ════════════════════
