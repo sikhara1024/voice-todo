@@ -8,10 +8,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1c1c1e">
 <title>음성 투두 &amp; 캘린더</title>
-<!-- Firebase compat SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -277,7 +273,7 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
         <button onclick="navCal(1)">›</button>
       </div>
       <div class="cal-title" id="calTitle"></div>
-      <button class="cal-add-btn" onclick="openAddModal(state.currentDate)" title="추가">+</button>
+      <button class="cal-add-btn" onclick="openAddModal()" title="추가">+</button>
       <div class="view-tabs">
         <button class="view-tab active" data-view="month" onclick="setView('month')">월</button>
         <button class="view-tab" data-view="week" onclick="setView('week')">주</button>
@@ -332,57 +328,21 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
           <div class="user-email" id="userEmail"></div>
         </div>
       </div>
-      <div style="font-size:13px;color:var(--t2);text-align:center;padding:4px 0 12px">
-        모든 기기에서 이 Google 계정으로 로그인하면 자동으로 동기화됩니다
+      <div style="font-size:13px;color:var(--t2);text-align:center;padding:4px 0 16px;line-height:1.7">
+        모든 기기에서 이 Google 계정으로 로그인하면<br>자동으로 실시간 동기화됩니다
       </div>
       <button class="disconnect-btn" onclick="signOutGoogle()">로그아웃</button>
-      <p class="config-toggle" onclick="toggleConfigArea()">▸ Firebase 설정 변경</p>
     </div>
 
-    <!-- 로그아웃 상태 (설정 있음) -->
-    <div id="syncLoggedOut" style="display:none">
-      <div style="font-size:13px;color:var(--t1);text-align:center;padding:8px 0 16px;line-height:1.6">
-        Google 계정으로 로그인하면<br>iPhone ↔ PC 간 실시간 동기화됩니다
+    <!-- 로그아웃 상태 -->
+    <div id="syncLoggedOut">
+      <div style="font-size:13px;color:var(--t1);text-align:center;padding:8px 0 20px;line-height:1.7">
+        Google 계정으로 로그인하면<br>iPhone ↔ PC 간 데이터가 실시간으로 동기화됩니다
       </div>
       <button class="google-btn" onclick="signInGoogle()">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHBhdGggZmlsbD0iI0ZGQzEwNyIgZD0iTTQzLjYxMSAyMC4wODNINDJWMjBIMjR2OGgxMS4zMDNjLTEuNjQ5IDQuNjU3LTYuMDggOC0xMS4zMDMgOC01LjUyMiAwLTEwLTQuNDc4LTEwLTEwczQuNDc4LTEwIDEwLTEwYzIuNjkgMCA1LjEyOSAxLjA3MyA2LjkzMyAyLjgwN2w1LjY1Ny01LjY1N0MzNC4wNDYgNi4wNTMgMjkuMjY4IDQgMjQgNCA0IDEwLjM2OSA0IDM2IDI0IDM2czE2LjM2OSA4LjM2OSAxNi4zNjktOS45NjNoLS43NTh6Ii8+PHBhdGggZmlsbD0iI0ZGM0QwMCIgZD0ibTYuMzA2IDE0LjY5MSA2LjU3MSA0LjgxOUMxNC42NTUgMTUuMTA4IDE4Ljk2MSAxMiAyNCAxMmMyLjY5IDAgNS4xMjkgMS4wNzMgNi45MzMgMi44MDdsNS42NTctNS42NTdDMzQuMDQ2IDYuMDUzIDI5LjI2OCA0IDI0IDQgMTYuMzE4IDQgOS42NTYgOC4zMzcgNi4zMDYgMTQuNjkxeiIvPjxwYXRoIGZpbGw9IiM0Q0FGNTAiIGQ9Ik0yNCA0NGM1LjE2NiAwIDkuODYtMS45NzcgMTMuNDA5LTUuMTkybC02LjE5LTUuMjM4QTExLjkxIDExLjkxIDAgMCAxIDI0IDM2Yy01LjIwMiAwLTkuNjE5LTMuMzE3LTExLjI4My03Ljk0Nmwtvi40MDcgNC43NzFDOS41MDQgNDAuMTA5IDE2LjMwOSA0NCAyNCA0NHoiLz48cGF0aCBmaWxsPSIjMTk3NkQyIiBkPSJNNDMuNjExIDIwLjA4M0g0MlYyMEgyNHY4aDExLjMwM2E3Ljc4IDcuNzggMCAwIDEtMi42NTggMy41N2wuMDAyLS4wMDEgNi4xOSA1LjIzOEM0MC4wNDggMzkuMTYyIDQ0IDM2IDQ0IDMwYzAtMS40MDItLjE1MS0yLjU5MS0uMzg5LTMuOTE3eiIvPjwvc3ZnPg==" alt="Google">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
         Google로 로그인
       </button>
-      <p class="config-toggle" onclick="toggleConfigArea()">▸ Firebase 설정 변경</p>
-    </div>
-
-    <!-- 설정 없음 (초기 상태) -->
-    <div id="syncNoConfig">
-      <div class="sync-steps">
-        <b>1단계 — Firebase 프로젝트 만들기 (무료, 5분)</b><br>
-        ① <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속<br>
-        ② <b>프로젝트 추가</b> → 이름 입력 → 계속<br>
-        ③ 왼쪽 메뉴 <b>Firestore Database</b> → <b>데이터베이스 만들기</b> → 테스트 모드로 시작<br>
-        ④ 왼쪽 메뉴 <b>Authentication</b> → <b>시작하기</b> → Google → 사용 설정<br>
-        ⑤ <b>Authentication → Settings → 승인된 도메인</b> → <b>sikhara1024.github.io</b> 추가<br>
-        ⑥ ⚙️ <b>프로젝트 설정</b> → 아래로 스크롤 → <b>웹 앱 추가(&lt;/&gt;)</b><br>
-        ⑦ 앱 닉네임 입력 → <b>firebaseConfig</b> 코드 복사
-      </div>
-      <div class="modal-field">
-        <label>Firebase Config 붙여넣기 (firebaseConfig = { … } 전체)</label>
-        <textarea id="fbConfigInput" placeholder='apiKey: "...",&#10;authDomain: "...",&#10;projectId: "...",&#10;...'></textarea>
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeSyncModal()">취소</button>
-        <button class="btn-save" onclick="saveFirebaseConfig()">저장 &amp; 연결</button>
-      </div>
-    </div>
-
-    <!-- 설정 변경 영역 (숨김) -->
-    <div id="syncConfigArea" style="display:none;margin-top:12px">
-      <div class="modal-field">
-        <label>Firebase Config (변경 시 다시 붙여넣기)</label>
-        <textarea id="fbConfigEditInput" placeholder="firebaseConfig 코드 붙여넣기"></textarea>
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="toggleConfigArea()">취소</button>
-        <button class="btn-save" onclick="saveFirebaseConfig(true)">저장</button>
-      </div>
     </div>
   </div>
 </div>
@@ -390,10 +350,15 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script>
+<script type="module">
+import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider,
+         onAuthStateChanged, signOut }                           from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getFirestore, doc, setDoc,
+         onSnapshot, serverTimestamp }                           from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
 // ═══════════════════ CONSTANTS ═══════════════════
 const STORAGE_KEY = 'vtodo_v2';
-const FB_CFG_KEY  = 'vtodo_fb_config';
 const COLORS = ['#0a84ff','#30d158','#ff9f0a','#ff453a','#bf5af2','#5ac8fa','#ff6b6b','#ffd93d'];
 const DOW_KO   = ['일','월','화','수','목','금','토'];
 const DOW_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
@@ -429,53 +394,40 @@ function loadLocal() {
   } catch(e) {}
 }
 
-// ═══════════════════ FIREBASE SYNC ═══════════════
-let fbApp = null, fbAuth = null, fbDb = null, fbUser = null, fbUnsub = null;
-let isPulling = false, pushTimer = null;
+// ═══════════════════ FIREBASE ════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyC60vFHIq3fE6PyaCuoiEBmuXdskAyLgGM",
+  authDomain: "voice-todo-c829c.firebaseapp.com",
+  projectId: "voice-todo-c829c",
+  storageBucket: "voice-todo-c829c.firebasestorage.app",
+  messagingSenderId: "856838910507",
+  appId: "1:856838910507:web:95773896bca49089f2b06e"
+};
+const fbApp  = initializeApp(firebaseConfig);
+const auth   = getAuth(fbApp);
+const db     = getFirestore(fbApp);
 
-function loadFbConfig() {
-  try { return JSON.parse(localStorage.getItem(FB_CFG_KEY)); } catch(e) { return null; }
-}
-function saveFbConfigRaw(cfg) { localStorage.setItem(FB_CFG_KEY, JSON.stringify(cfg)); }
+let currentUser = null, fbUnsub = null, isPulling = false, pushTimer = null;
 
-function parseConfigInput(text) {
-  // Accept either raw JSON or the firebaseConfig = { ... } format
-  let s = text.trim();
-  s = s.replace(/^const\s+firebaseConfig\s*=\s*/, '').replace(/^var\s+firebaseConfig\s*=\s*/, '').replace(/^let\s+firebaseConfig\s*=\s*/, '');
-  s = s.replace(/;\s*$/, '').trim();
-  // Convert JS object literal to JSON (quote unquoted keys)
-  s = s.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
-  return JSON.parse(s);
-}
-
-function initFirebase(config) {
-  try {
-    if (fbApp) { try { fbApp.delete(); } catch(e){} }
-    fbApp  = firebase.initializeApp(config, 'vtodo_' + Date.now());
-    fbAuth = firebase.auth(fbApp);
-    fbDb   = firebase.firestore(fbApp);
-    fbAuth.onAuthStateChanged(user => {
-      fbUser = user;
-      renderSyncModal();
-      updateSyncBar();
-      if (user) {
-        subscribeFb();
-        document.getElementById('syncRefreshBtn').style.display = '';
-      } else {
-        if (fbUnsub) { fbUnsub(); fbUnsub = null; }
-        document.getElementById('syncRefreshBtn').style.display = 'none';
-      }
-    });
-  } catch(e) { showToast('Firebase 초기화 오류: ' + e.message); }
-}
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  updateSyncUI();
+  if (user) {
+    subscribeFb();
+    document.getElementById('syncRefreshBtn').style.display = '';
+  } else {
+    if (fbUnsub) { fbUnsub(); fbUnsub = null; }
+    document.getElementById('syncRefreshBtn').style.display = 'none';
+  }
+});
 
 async function fbPush() {
-  if (!fbDb || !fbUser || isPulling) return;
+  if (!currentUser || isPulling) return;
+  setSyncDot('busy');
   try {
-    setSyncDot('busy');
-    await fbDb.collection('todos').doc(fbUser.uid).set({
+    await setDoc(doc(db, 'todos', currentUser.uid), {
       items: state.todos,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      updatedAt: serverTimestamp()
     });
     setSyncDot('ok');
   } catch(e) { setSyncDot('err'); console.warn('fbPush', e); }
@@ -487,105 +439,61 @@ function debouncedPush() {
 }
 
 function subscribeFb() {
-  if (!fbDb || !fbUser) return;
   if (fbUnsub) fbUnsub();
-  fbUnsub = fbDb.collection('todos').doc(fbUser.uid).onSnapshot(snap => {
-    if (!snap.exists) return;
+  fbUnsub = onSnapshot(doc(db, 'todos', currentUser.uid), snap => {
+    if (!snap.exists()) return;
     const data = snap.data();
     if (!data || !Array.isArray(data.items)) return;
     isPulling = true;
     state.todos = data.items;
-    saveLocal();
-    renderTodoList();
-    renderCal();
-    rescheduleAll();
+    saveLocal(); renderTodoList(); renderCal(); rescheduleAll();
     setSyncDot('ok');
     setTimeout(() => { isPulling = false; }, 300);
   }, err => { setSyncDot('err'); console.warn('fb snapshot', err); });
 }
 
 async function signInGoogle() {
-  if (!fbAuth) { showToast('Firebase가 설정되지 않았습니다'); return; }
-  const provider = new firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  try { await fbAuth.signInWithPopup(provider); }
-  catch(e) {
+  try {
+    await signInWithPopup(auth, provider);
+    closeSyncModal();
+    showToast('로그인됨 — 동기화 시작 ☁️');
+  } catch(e) {
     if (e.code !== 'auth/popup-closed-by-user') showToast('로그인 실패: ' + e.message);
   }
 }
 
 async function signOutGoogle() {
-  if (!fbAuth) return;
   if (fbUnsub) { fbUnsub(); fbUnsub = null; }
-  await fbAuth.signOut();
+  await signOut(auth);
   closeSyncModal();
-  showToast('로그아웃되었습니다');
+  showToast('로그아웃됨');
 }
 
 function manualSync() {
-  if (!fbDb || !fbUser) { openSyncModal(); return; }
-  setSyncDot('busy');
-  fbDb.collection('todos').doc(fbUser.uid).get().then(snap => {
-    if (snap.exists) {
-      const data = snap.data();
-      if (Array.isArray(data.items)) {
-        isPulling = true;
-        state.todos = data.items;
-        saveLocal(); renderTodoList(); renderCal(); rescheduleAll();
-        setTimeout(() => { isPulling = false; }, 300);
-      }
-    }
-    setSyncDot('ok'); showToast('동기화 완료 ☁️');
-  }).catch(() => setSyncDot('err'));
+  if (!currentUser) { openSyncModal(); return; }
+  subscribeFb();
+  showToast('동기화 중... ☁️');
 }
 
-// ─── Sync UI ───
-function setSyncDot(status) {
-  document.getElementById('syncDot').className = 'sync-dot' + (status ? ' ' + status : '');
-}
-function updateSyncBar() {
+function setSyncDot(s) { document.getElementById('syncDot').className = 'sync-dot' + (s ? ' ' + s : ''); }
+function updateSyncUI() {
   const lbl = document.getElementById('syncLabel');
-  if (!fbUser) {
-    setSyncDot('');
-    lbl.textContent = loadFbConfig() ? '로그인 필요 — 설정을 눌러 로그인' : '동기화 꺼짐 — 설정을 눌러 연결';
-  } else {
-    setSyncDot('ok');
-    lbl.textContent = fbUser.displayName || fbUser.email;
-  }
-}
-
-function saveFirebaseConfig(isEdit) {
-  const el = isEdit ? document.getElementById('fbConfigEditInput') : document.getElementById('fbConfigInput');
-  const text = el.value.trim();
-  if (!text) { showToast('설정을 붙여넣어 주세요'); return; }
-  try {
-    const cfg = parseConfigInput(text);
-    if (!cfg.apiKey || !cfg.projectId) throw new Error('필수 항목 누락');
-    saveFbConfigRaw(cfg);
-    initFirebase(cfg);
-    el.value = '';
-    if (isEdit) toggleConfigArea();
-    showToast('Firebase 연결됨 — Google로 로그인해 주세요');
-    renderSyncModal();
-  } catch(e) { showToast('설정 형식 오류: ' + e.message); }
-}
-
-function toggleConfigArea() {
-  const area = document.getElementById('syncConfigArea');
-  area.style.display = area.style.display === 'none' ? 'block' : 'none';
+  if (!currentUser) { setSyncDot(''); lbl.textContent = 'Google 로그인 필요 — 설정을 눌러 연결'; }
+  else { setSyncDot('ok'); lbl.textContent = currentUser.displayName || currentUser.email; }
+  if (document.getElementById('syncOverlay').classList.contains('open')) renderSyncModal();
 }
 
 function renderSyncModal() {
-  const hasConfig = !!loadFbConfig();
-  document.getElementById('syncNoConfig').style.display   = hasConfig      ? 'none'  : 'block';
-  document.getElementById('syncLoggedIn').style.display   = fbUser         ? 'block' : 'none';
-  document.getElementById('syncLoggedOut').style.display  = (hasConfig && !fbUser) ? 'block' : 'none';
-  if (fbUser) {
-    document.getElementById('userName').textContent  = fbUser.displayName || '사용자';
-    document.getElementById('userEmail').textContent = fbUser.email || '';
-    if (fbUser.photoURL) {
-      const img = document.getElementById('userAvatar');
-      img.src = fbUser.photoURL; img.style.display = 'block';
+  document.getElementById('syncLoggedIn').style.display  = currentUser ? 'block' : 'none';
+  document.getElementById('syncLoggedOut').style.display = currentUser ? 'none'  : 'block';
+  if (currentUser) {
+    document.getElementById('userName').textContent  = currentUser.displayName || '사용자';
+    document.getElementById('userEmail').textContent = currentUser.email || '';
+    if (currentUser.photoURL) {
+      document.getElementById('userAvatar').src = currentUser.photoURL;
+      document.getElementById('userAvatar').style.display = 'block';
       document.getElementById('userAvatarPlaceholder').style.display = 'none';
     }
   }
@@ -595,6 +503,7 @@ function openSyncModal() { renderSyncModal(); document.getElementById('syncOverl
 function closeSyncModal() { document.getElementById('syncOverlay').classList.remove('open'); }
 
 document.getElementById('syncBtn').addEventListener('click', openSyncModal);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && currentUser) subscribeFb(); });
 
 // ═══════════════════ KOREAN PARSER ═══════════════
 function parseInput(text) {
@@ -795,7 +704,7 @@ function attachCalEvents(){
 }
 
 // ═══════════════════ EVENT MODAL ═════════════════
-function openAddModal(date,h,m){ state.editingId=null; document.getElementById('modalTitle').textContent='일정 추가'; document.getElementById('mTitle').value=''; document.getElementById('mDate').value=date?toInputDate(date):''; document.getElementById('mTime').value=(h!==undefined)?`${String(h).padStart(2,'0')}:${String(m||0).padStart(2,'0')}`:''; state.modalColor=COLORS[0]; renderModalColors(); document.getElementById('modalBtns').innerHTML=`<button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveModal()">저장</button>`; document.getElementById('modalOverlay').classList.add('open'); setTimeout(()=>document.getElementById('mTitle').focus(),150); }
+function openAddModal(date,h,m){ date=date||state.currentDate; state.editingId=null; document.getElementById('modalTitle').textContent='일정 추가'; document.getElementById('mTitle').value=''; document.getElementById('mDate').value=date?toInputDate(date):''; document.getElementById('mTime').value=(h!==undefined)?`${String(h).padStart(2,'0')}:${String(m||0).padStart(2,'0')}`:''; state.modalColor=COLORS[0]; renderModalColors(); document.getElementById('modalBtns').innerHTML=`<button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveModal()">저장</button>`; document.getElementById('modalOverlay').classList.add('open'); setTimeout(()=>document.getElementById('mTitle').focus(),150); }
 function openEditModal(id){ const todo=state.todos.find(t=>t.id===id); if(!todo)return; state.editingId=id; document.getElementById('modalTitle').textContent='일정 수정'; document.getElementById('mTitle').value=todo.title; document.getElementById('mDate').value=todo.date?toInputDate(new Date(todo.date)):''; document.getElementById('mTime').value=todo.hasTime&&todo.date?toInputTime(new Date(todo.date)):''; state.modalColor=todo.color||COLORS[0]; renderModalColors(); document.getElementById('modalBtns').innerHTML=`<button class="btn-del" onclick="deleteFromModal()">삭제</button><button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveModal()">저장</button>`; document.getElementById('modalOverlay').classList.add('open'); setTimeout(()=>document.getElementById('mTitle').focus(),150); }
 function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); state.editingId=null; }
 function saveModal(){
@@ -833,14 +742,17 @@ function showToast(msg,cls='',dur=3000){ const wrap=document.getElementById('toa
 function init(){
   loadLocal(); applyTheme(); initVoice(); initMobile();
   renderTodoList(); renderCal(); rescheduleAll(); checkNotifBanner();
-  // Firebase init if config saved
-  const cfg = loadFbConfig();
-  if (cfg) initFirebase(cfg);
-  updateSyncBar();
-  // Pull on tab focus
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && fbUser) manualSync(); });
 }
 window.addEventListener('load', init);
+
+// ── window 노출 (module 내부 함수를 HTML onclick에서 호출하기 위해) ──
+Object.assign(window, {
+  requestNotifPerm, manualSync,
+  openSyncModal, closeSyncModal, signInGoogle, signOutGoogle,
+  addFromText, navCal, goToday, setView, switchTab,
+  toggleTodo, deleteTodo, openAddModal, openEditModal,
+  closeModal, saveModal, deleteFromModal, selectColor
+});
 </script>
 </body>
 </html>
