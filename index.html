@@ -108,7 +108,8 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
 .view-tab{background:none;border:none;padding:5px 13px;border-radius:7px;color:var(--t1);font-size:13px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .view-tab.active{background:var(--bg3);color:var(--t0)}
 .cal-add-btn{background:var(--acc);border:none;border-radius:9px;width:32px;height:32px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-.cal-body{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.cal-body{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;position:relative}
+.cal-slide{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* MONTHLY */
 .month-grid{display:flex;flex-direction:column;height:100%}
@@ -672,18 +673,31 @@ function renderTodoList(){
 document.querySelectorAll('.filter-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ state.filter=btn.dataset.filter; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); saveLocal(); renderTodoList(); }); });
 
 // ═══════════════════ CALENDAR ════════════════════
-function navCal(d){ const dt=new Date(state.currentDate); if(state.view==='month')dt.setMonth(dt.getMonth()+d); else if(state.view==='week')dt.setDate(dt.getDate()+d*7); else dt.setDate(dt.getDate()+d); state.currentDate=dt; saveLocal(); renderCal(); }
-function goToday(){ state.currentDate=new Date(); state.selectedDate=new Date(); saveLocal(); renderCal(); }
-function setView(v){ state.view=v; document.querySelectorAll('.view-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v)); saveLocal(); renderCal(); }
+function navCal(d){ const dt=new Date(state.currentDate); if(state.view==='month')dt.setMonth(dt.getMonth()+d); else if(state.view==='week')dt.setDate(dt.getDate()+d*7); else dt.setDate(dt.getDate()+d); state.currentDate=dt; saveLocal(); renderCal(d); }
+function goToday(){ state.currentDate=new Date(); state.selectedDate=new Date(); saveLocal(); renderCal(0); }
+function setView(v){ state.view=v; document.querySelectorAll('.view-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v)); saveLocal(); renderCal(0); }
 
-function renderCal(){
+function renderCal(dir=0){
   updateCalTitle();
   const body=document.getElementById('calBody');
-  if(state.view==='month')body.innerHTML=renderMonthHTML();
-  else if(state.view==='week')body.innerHTML=renderWeekHTML();
-  else body.innerHTML=renderDayHTML(state.currentDate);
-  attachCalEvents();
-  if(state.view!=='month') scrollToNow();
+  let html;
+  if(state.view==='month') html=renderMonthHTML();
+  else if(state.view==='week') html=renderWeekHTML();
+  else html=renderDayHTML(state.currentDate);
+  const old=body.firstElementChild;
+  const next=document.createElement('div');
+  next.className='cal-slide'; next.innerHTML=html;
+  if(!dir||!old){ body.innerHTML=''; body.appendChild(next); attachCalEvents(); if(state.view!=='month')scrollToNow(); return; }
+  const T='.32s cubic-bezier(.4,0,.2,1)';
+  const base='position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;will-change:transform,opacity;';
+  old.style.cssText=base+`transition:transform ${T},opacity .28s;`;
+  next.style.cssText=base+`transform:translateY(${dir>0?'100%':'-100%'});opacity:0;transition:transform ${T},opacity .28s;`;
+  body.appendChild(next); attachCalEvents(); if(state.view!=='month')scrollToNow();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    old.style.transform=dir>0?'translateY(-100%)':'translateY(100%)'; old.style.opacity='0';
+    next.style.transform='translateY(0)'; next.style.opacity='1';
+  }));
+  setTimeout(()=>{ old.remove(); next.style.cssText=''; }, 360);
 }
 function updateCalTitle(){ const d=state.currentDate,t=document.getElementById('calTitle'); if(state.view==='month')t.textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월`; else if(state.view==='week'){ const ws=weekStart(d),we=new Date(ws); we.setDate(we.getDate()+6); t.textContent=ws.getMonth()===we.getMonth()?`${ws.getFullYear()}년 ${ws.getMonth()+1}월 ${ws.getDate()}–${we.getDate()}일`:`${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`; }else t.textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${DOW_FULL[d.getDay()]})`; }
 
