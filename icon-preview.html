@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>앱 아이콘 미리보기</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; font-family: -apple-system, sans-serif; color: #fff;
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 36px; padding: 40px 20px; }
+h1 { font-size: 15px; color: #8e8e93; font-weight: 500; }
+
+.icon-wrap { border-radius: 22.5%; overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,80,200,.5); }
+.icon-wrap img { display: block; width: 100%; height: 100%; }
+
+.phone { width: 270px; height: 500px;
+  background: linear-gradient(160deg,#1a2a4a,#0d1b30);
+  border-radius: 40px; border: 2px solid #2a3a5a;
+  position: relative; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.8);
+  padding: 68px 22px 24px; }
+.notch { position:absolute; top:14px; left:50%; transform:translateX(-50%);
+  width:88px; height:22px; background:#000; border-radius:11px; }
+.time  { position:absolute; top:18px; left:24px; font-size:13px; font-weight:600; }
+.grid  { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.app   { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.app-icon { width:58px; height:58px; border-radius:13px; }
+.ph   { background:#2a3a5a; opacity:.4; }
+.app-label { font-size:9px; color:rgba(255,255,255,.75); text-align:center; }
+
+.label { font-size:13px; color:#8e8e93; }
+</style>
+</head>
+<body>
+<h1>홈 화면 아이콘 미리보기</h1>
+
+<div class="icon-wrap" style="width:130px;height:130px">
+  <img src="inon2.png" alt="앱 아이콘">
+</div>
+<div class="label">아이콘 미리보기 (130px)</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="time">9:41</div>
+  <div class="grid">
+    <div class="app"><div class="app-icon ph"></div><div class="app-label">메시지</div></div>
+    <div class="app"><div class="app-icon ph" style="background:#3a2a5a"></div><div class="app-label">사진</div></div>
+    <div class="app"><div class="app-icon ph" style="background:#1a4a3a"></div><div class="app-label">지도</div></div>
+    <div class="app"><div class="app-icon ph" style="background:#4a3a2a"></div><div class="app-label">설정</div></div>
+    <div class="app"><div class="app-icon ph" style="background:#2a4a2a"></div><div class="app-label">캘린더</div></div>
+    <div class="app"><div class="app-icon ph" style="background:#3a3a2a"></div><div class="app-label">메모</div></div>
+    <div class="app">
+      <div class="icon-wrap" style="width:58px;height:58px">
+        <img src="inon2.png" alt="투두 캘린더">
+      </div>
+      <div class="app-label">투두 캘린더</div>
+    </div>
+    <div class="app"><div class="app-icon ph" style="background:#2a2a4a"></div><div class="app-label">음악</div></div>
+  </div>
+</div>
+</body>
+</html>
