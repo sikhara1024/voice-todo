@@ -30,12 +30,20 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
 
 /* VOICE */
 .voice-section{padding:16px 20px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;border-bottom:1px solid var(--bdr);flex-shrink:0}
-.mic-wrap{position:relative;display:flex;align-items:center;justify-content:center}
-.mic-ring{position:absolute;width:80px;height:80px;border-radius:50%;border:2px solid var(--acc);opacity:0;pointer-events:none}
-.mic-btn{width:66px;height:66px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;z-index:1;transition:.2s;box-shadow:0 4px 20px rgba(10,132,255,.4);-webkit-tap-highlight-color:transparent}
-.mic-btn.recording{background:var(--red);box-shadow:0 4px 20px rgba(255,69,58,.5)}
-.mic-btn.recording~.mic-ring{animation:pulse 1.2s ease-out infinite}
-@keyframes pulse{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
+.mic-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:120px;height:120px}
+.mic-ring{position:absolute;border-radius:50%;border:1.5px solid transparent;pointer-events:none}
+.mic-ring1{width:88px;height:88px;border-color:rgba(94,92,230,.45);animation:ripple 2.4s ease-out infinite}
+.mic-ring2{width:108px;height:108px;border-color:rgba(10,132,255,.25);animation:ripple 2.4s ease-out infinite .8s}
+.mic-ring3{width:120px;height:120px;border-color:rgba(10,132,255,.12);animation:ripple 2.4s ease-out infinite 1.6s}
+@keyframes ripple{0%{transform:scale(.72);opacity:.9}100%{transform:scale(1);opacity:0}}
+.mic-btn{width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#0a84ff 0%,#5e5ce6 100%);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;transition:.15s;box-shadow:0 6px 28px rgba(94,92,230,.55),0 2px 8px rgba(10,132,255,.3);-webkit-tap-highlight-color:transparent}
+.mic-btn:hover{transform:scale(1.07);box-shadow:0 8px 32px rgba(94,92,230,.7)}
+.mic-btn:active{transform:scale(.95)}
+.mic-btn svg{width:30px;height:30px}
+.mic-btn.recording{background:linear-gradient(135deg,#ff453a 0%,#ff2d55 100%);box-shadow:0 6px 28px rgba(255,45,85,.55)}
+.mic-btn.recording~.mic-ring1{border-color:rgba(255,69,58,.5)}
+.mic-btn.recording~.mic-ring2{border-color:rgba(255,45,85,.3)}
+.mic-btn.recording~.mic-ring3{border-color:rgba(255,45,85,.15)}
 .voice-status{font-size:13px;color:var(--t2);text-align:center}
 .transcript-preview{width:100%;background:var(--bg2);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--t1);display:none;word-break:break-word;line-height:1.5}
 .transcript-preview.visible{display:block}
@@ -232,8 +240,12 @@ body{height:100vh;height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Se
 
     <div class="voice-section">
       <div class="mic-wrap">
-        <div class="mic-ring" id="micRing"></div>
-        <button class="mic-btn" id="micBtn">🎤</button>
+        <button class="mic-btn" id="micBtn">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V21H9v2h6v-2h-2v-2.06A9 9 0 0 0 21 10h-2z"/></svg>
+        </button>
+        <div class="mic-ring mic-ring1"></div>
+        <div class="mic-ring mic-ring2"></div>
+        <div class="mic-ring mic-ring3"></div>
       </div>
       <div class="voice-status" id="voiceStatus">클릭하여 음성 입력</div>
       <div class="transcript-preview" id="transcriptPreview"></div>
@@ -593,12 +605,12 @@ function initVoice() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ document.getElementById('voiceStatus').textContent='음성 인식 미지원'; document.getElementById('micBtn').style.opacity='.4'; document.getElementById('micBtn').style.pointerEvents='none'; return; }
   recognition=new SR(); recognition.lang='ko-KR'; recognition.continuous=true; recognition.interimResults=true;
-  recognition.onstart=()=>{ isRecording=true; fullTranscript=''; resetStopTimer(); document.getElementById('micBtn').classList.add('recording'); document.getElementById('micBtn').textContent='⏹'; document.getElementById('voiceStatus').textContent='듣는 중...'; };
+  recognition.onstart=()=>{ isRecording=true; fullTranscript=''; resetStopTimer(); const b=document.getElementById('micBtn'); b.classList.add('recording'); b.innerHTML=`<svg viewBox="0 0 24 24" fill="#fff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`; document.getElementById('voiceStatus').textContent='듣는 중...'; };
   recognition.onresult=(e)=>{ resetStopTimer(); let interim=''; for(let x=e.resultIndex;x<e.results.length;x++){ if(e.results[x].isFinal)fullTranscript+=e.results[x][0].transcript; else interim+=e.results[x][0].transcript; } const p=document.getElementById('transcriptPreview'); p.textContent=fullTranscript+interim; p.classList.add('visible'); };
   recognition.onerror=(e)=>{ clearTimeout(stopTimer); stopRec(); if(e.error==='no-speech'){}else if(e.error==='not-allowed')showToast('마이크 권한이 필요합니다'); else showToast('오류: '+e.error); };
   recognition.onend=()=>{ clearTimeout(stopTimer); stopRec(); if(fullTranscript.trim())processVoice(fullTranscript.trim()); };
 }
-function stopRec(){ isRecording=false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('micBtn').textContent='🎤'; document.getElementById('voiceStatus').textContent='클릭하여 음성 입력'; }
+function stopRec(){ isRecording=false; const b=document.getElementById('micBtn'); b.classList.remove('recording'); b.innerHTML=`<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V21H9v2h6v-2h-2v-2.06A9 9 0 0 0 21 10h-2z"/></svg>`; document.getElementById('voiceStatus').textContent='클릭하여 음성 입력'; }
 document.getElementById('micBtn').addEventListener('click',()=>{ if(!recognition)return; if(isRecording){ clearTimeout(stopTimer); recognition.stop(); } else{ document.getElementById('transcriptPreview').classList.remove('visible'); fullTranscript=''; recognition.start(); } });
 function processVoice(text){ const p=document.getElementById('transcriptPreview'); p.textContent=text; const d=parseInput(text); addTodo(d.title,d.date,d.hasTime); setTimeout(()=>{ p.classList.remove('visible'); p.textContent=''; },2500); }
 
@@ -758,9 +770,28 @@ document.getElementById('themeBtn').addEventListener('click',()=>{ state.theme=s
 // ═══════════════════ TOAST ════════════════════════
 function showToast(msg,cls='',dur=3000){ const wrap=document.getElementById('toastWrap'),el=document.createElement('div'); el.className='toast'+(cls?' '+cls:''); el.textContent=msg; wrap.appendChild(el); setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),280); },dur); }
 
+// ═══════════════════ CAL SCROLL/SWIPE NAV ════════════════════
+function initCalNav(){
+  const main=document.getElementById('main');
+  let wLock=false;
+  main.addEventListener('wheel',e=>{
+    if(e.target.closest('.tg-body'))return;
+    e.preventDefault();
+    if(wLock)return; wLock=true; setTimeout(()=>{wLock=false;},420);
+    navCal(e.deltaY>0?1:-1);
+  },{passive:false});
+  let tX=0,tY=0,tEl=null;
+  main.addEventListener('touchstart',e=>{ tX=e.touches[0].clientX; tY=e.touches[0].clientY; tEl=e.target; },{passive:true});
+  main.addEventListener('touchend',e=>{
+    if(tEl&&tEl.closest('.tg-body'))return;
+    const dx=tX-e.changedTouches[0].clientX, dy=tY-e.changedTouches[0].clientY;
+    if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)*1.2) navCal(dy>0?1:-1);
+  },{passive:true});
+}
+
 // ═══════════════════ INIT ════════════════════════
 function init(){
-  loadLocal(); applyTheme(); initVoice(); initMobile();
+  loadLocal(); applyTheme(); initVoice(); initMobile(); initCalNav();
   renderTodoList(); renderCal(); rescheduleAll(); checkNotifBanner();
 }
 window.addEventListener('load', init);
